@@ -292,6 +292,26 @@ def test_select_result_parse_serialized(
     assert select_result == parsed_result
 
 
+def test_result_eq_propagates_exception() -> None:
+    """
+    Result.__eq__ should not swallow exceptions raised during comparison.
+    """
+
+    class BadOther:
+        """An object whose attribute access raises an unexpected error."""
+
+        @property
+        def type(self) -> str:
+            raise RuntimeError("unexpected error during comparison")
+
+    result = Result("SELECT")
+    result.vars = []
+    result.bindings = []
+
+    with pytest.raises(RuntimeError, match="unexpected error during comparison"):
+        result == BadOther()
+
+
 def make_test_serialize_to_strdest_tests() -> Iterator[ParameterSet]:
     destination_types: set[DestinationType] = {
         DestinationType.FILE_URI,
