@@ -397,6 +397,8 @@ class Result:
             raise AttributeError("'%s' object has no attribute '%s'" % (self, name))
 
     def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, Result):
+            return NotImplemented
         if self.type != other.type:
             return False
         if self.type == "ASK":
