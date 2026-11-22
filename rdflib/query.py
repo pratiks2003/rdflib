@@ -397,17 +397,14 @@ class Result:
             raise AttributeError("'%s' object has no attribute '%s'" % (self, name))
 
     def __eq__(self, other: Any) -> bool:
-        try:
-            if self.type != other.type:
-                return False
-            if self.type == "ASK":
-                return self.askAnswer == other.askAnswer
-            elif self.type == "SELECT":
-                return self.vars == other.vars and self.bindings == other.bindings
-            else:
-                return self.graph == other.graph
-        except Exception:
+        if self.type != other.type:
             return False
+        if self.type == "ASK":
+            return self.askAnswer == other.askAnswer
+        elif self.type == "SELECT":
+            return self.vars == other.vars and self.bindings == other.bindings
+        else:
+            return self.graph == other.graph
 
 
 class ResultParser:
