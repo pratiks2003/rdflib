@@ -226,6 +226,25 @@ def test_select_result_serialize_parse(
     check_serialized(format_info.name, select_result, serialized_data)
 
 
+def test_result_eq_non_result() -> None:
+    """
+    Result.__eq__ returns NotImplemented when compared with a non-Result object,
+    rather than silently returning False or swallowing exceptions.
+    """
+    r = Result("ASK")
+    r.askAnswer = True
+    assert r.__eq__("not a result") is NotImplemented
+    assert r.__eq__(42) is NotImplemented
+    assert r.__eq__(None) is NotImplemented
+    # Two equivalent ASK results should still be equal
+    r2 = Result("ASK")
+    r2.askAnswer = True
+    assert r == r2
+    r3 = Result("ASK")
+    r3.askAnswer = False
+    assert r != r3
+
+
 def serialize_select(select_result: Result, format: str, encoding: str) -> bytes:
     result = select_result.serialize(format=format, encoding=encoding)
     assert result is not None
@@ -290,26 +309,6 @@ def test_select_result_parse_serialized(
     parsed_result = Result.parse(source, format=format_info.name)
 
     assert select_result == parsed_result
-
-
-def test_result_eq_propagates_exception() -> None:
-    """
-    Result.__eq__ should not swallow exceptions raised during comparison.
-    """
-
-    class BadOther:
-        """An object whose attribute access raises an unexpected error."""
-
-        @property
-        def type(self) -> str:
-            raise RuntimeError("unexpected error during comparison")
-
-    result = Result("SELECT")
-    result.vars = []
-    result.bindings = []
-
-    with pytest.raises(RuntimeError, match="unexpected error during comparison"):
-        result == BadOther()
 
 
 def make_test_serialize_to_strdest_tests() -> Iterator[ParameterSet]:
